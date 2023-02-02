@@ -54,8 +54,7 @@ class NeRFNetwork(NeRFRenderer):
         # x: [B, N, 3]
 
         d = (x ** 2).sum(-1)
-       # g = 5 * torch.exp(-d / (2 * 0.2 ** 2))
-    g = self.opt.blob_density * (1 - torch.sqrt(d) / self.opt.blob_radius)
+        g = self.opt.blob_density * (1 - torch.sqrt(d) / self.opt.blob_radius)
 
         return g
 
