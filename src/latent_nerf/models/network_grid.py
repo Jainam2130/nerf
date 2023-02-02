@@ -74,7 +74,7 @@ class NeRFNetwork(NeRFRenderer):
         elif not self.latent_mode:
             albedo = torch.sigmoid(h[..., 1:])
 
-       normal = self.normal_net(enc)
+        normal = self.normal_net(enc)
 
         return normal,albedo, normal
 
