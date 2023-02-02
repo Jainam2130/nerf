@@ -47,11 +47,12 @@ class NeRFNetwork(NeRFRenderer):
             self.decoder_layer = None
 
     # add a density blob to the scene center
-    def gaussian(self, x):
+    def density_blob(self, x):
         # x: [B, N, 3]
 
         d = (x ** 2).sum(-1)
-        g = 5 * torch.exp(-d / (2 * 0.2 ** 2))
+       # g = 5 * torch.exp(-d / (2 * 0.2 ** 2))
+    g = self.opt.blob_density * (1 - torch.sqrt(d) / self.opt.blob_radius)
 
         return g
 
@@ -59,11 +60,11 @@ class NeRFNetwork(NeRFRenderer):
         # x: [N, 3], in [-bound, bound]
 
         # sigma
-        h = self.encoder(x, bound=self.bound)
+        enc = self.encoder(x, bound=self.bound)
 
-        h = self.sigma_net(h)
+        h = self.sigma_net(enc)
 
-        sigma = trunc_exp(h[..., 0] + self.gaussian(x))
+        sigma = trunc_exp(h[..., 0] + self.density_blob(x))
         albedo = h[..., 1:]
         if self.decoder_layer is not None:
             albedo = self.decoder_layer(albedo)
