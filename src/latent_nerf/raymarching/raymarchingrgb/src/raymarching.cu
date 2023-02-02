@@ -521,22 +521,23 @@ __global__ void kernel_composite_rays_train_forward(
     if (num_steps == 0 || offset + num_steps > M) {
         weights_sum[n] = 0;
         depth[n] = 0;
-        image[n * 3] = 0;
-        image[n * 3 + 1] = 0;
-        image[n * 3 + 2] = 0;
+        image[n * (3+1)] = 0;
+        image[n * (3+1) + 1] = 0;
+        image[n * (3+1) + 2] = 0;
+	image[n * (3+1) + 3] = 0;
         return;
     }
 
     ts += offset * 2;
     weights += offset;
     sigmas += offset;
-    rgbs += offset * 3;
+    rgbs += offset * (3+1);
 
     // accumulate 
     uint32_t step = 0;
 
     float T = 1.0f;
-    float r = 0, g = 0, b = 0, ws = 0, d = 0;
+    float r = 0, g = 0, b = 0,newvar = 0, ws = 0, d = 0;
 
     while (step < num_steps) {
 
@@ -548,6 +549,7 @@ __global__ void kernel_composite_rays_train_forward(
         r += weight * rgbs[0];
         g += weight * rgbs[1];
         b += weight * rgbs[2];
+	newvar += weight * rgbs[3];
         ws += weight;
         d += weight * ts[0];
         
@@ -572,9 +574,10 @@ __global__ void kernel_composite_rays_train_forward(
     // write
     weights_sum[n] = ws; // weights_sum
     depth[n] = d;
-    image[n * 3] = r;
-    image[n * 3 + 1] = g;
-    image[n * 3 + 2] = b;
+    image[n * (3+1)] = r;
+    image[n * (3+1) + 1] = g;
+    image[n * (3+1) + 2] = b;
+    image[index * (3+1) + 3] = newvar;
 }
 
 
@@ -594,13 +597,13 @@ void composite_rays_train_forward(const at::Tensor sigmas, const at::Tensor rgbs
 // grad_image: [N, 3]
 // grad_depth: [N,]
 // sigmas: [M]
-// rgbs: [M, 3]
+// rgbs: [M, 3+1]
 // ts: [M, 2]
 // rays: [N, 2], offset, num_steps
 // weights_sum: [N,], weights_sum here 
 // image: [N, 3]
 // grad_sigmas: [M]
-// grad_rgbs: [M, 3]
+// grad_rgbs: [M, 3+1]
 template <typename scalar_t>
 __global__ void kernel_composite_rays_train_backward(
     const scalar_t * __restrict__ grad_weights,
@@ -631,22 +634,22 @@ __global__ void kernel_composite_rays_train_backward(
     grad_weights += offset;
     grad_weights_sum += n;
     grad_depth += n;
-    grad_image += n * 3;
+    grad_image += n * (3+1);
     weights_sum += n;
     depth += n;
-    image += n * 3;
+    image += n * (3+1);
     sigmas += offset;
-    rgbs += offset * 3;
+    rgbs += offset * (3+1);
     ts += offset * 2;
     grad_sigmas += offset;
-    grad_rgbs += offset * 3;
+    grad_rgbs += offset *(3+1);
 
     // accumulate 
     uint32_t step = 0;
     
     float T = 1.0f;
-    const float r_final = image[0], g_final = image[1], b_final = image[2], ws_final = weights_sum[0], d_final = depth[0];
-    float r = 0, g = 0, b = 0, ws = 0, d = 0;
+    const float r_final = image[0], g_final = image[1], b_final = image[2],newvar_final = image[3],  ws_final = weights_sum[0], d_final = depth[0];
+    float r = 0, g = 0, b = 0, ws = 0, newvar=0, d = 0;
 
     while (step < num_steps) {
         
@@ -656,6 +659,7 @@ __global__ void kernel_composite_rays_train_backward(
         r += weight * rgbs[0];
         g += weight * rgbs[1];
         b += weight * rgbs[2];
+	newvar += weight * rgbs[3];
         ws += weight;
         d += weight * ts[0];
 
@@ -666,12 +670,14 @@ __global__ void kernel_composite_rays_train_backward(
         grad_rgbs[0] = grad_image[0] * weight;
         grad_rgbs[1] = grad_image[1] * weight;
         grad_rgbs[2] = grad_image[2] * weight;
+	grad_rgbs[3] = grad_image[3] * weight;
 
         // write grad_sigmas
         grad_sigmas[0] = ts[1] * (
             grad_image[0] * (T * rgbs[0] - (r_final - r)) + 
             grad_image[1] * (T * rgbs[1] - (g_final - g)) + 
             grad_image[2] * (T * rgbs[2] - (b_final - b)) +
+	    grad_image[3] * (T * rgbs[3] - (newvar_final - newvar)) +
             (grad_weights_sum[0] + grad_weights[0]) * (T - (ws_final - ws)) + 
             grad_depth[0] * (T * ts[0] - (d_final - d))
         );
@@ -682,11 +688,11 @@ __global__ void kernel_composite_rays_train_backward(
         
         // locate
         sigmas++;
-        rgbs += 3;
+        rgbs += (3+1);
         ts += 2;
         grad_weights++;
         grad_sigmas++;
-        grad_rgbs += 3;
+        grad_rgbs += (3+1);
 
         step++;
     }
@@ -856,13 +862,13 @@ __global__ void kernel_composite_rays(
     
     // locate 
     sigmas += n * n_step;
-    rgbs += n * n_step * 3;
+    rgbs += n * n_step * (3+1);
     ts += n * n_step * 2;
     
     rays_t += index;
     weights_sum += index;
     depth += index;
-    image += index * 3;
+    image += index * (3+1);
 
     float t;
     float d = depth[0], r = image[0], g = image[1], b = image[2], weight_sum = weights_sum[0];
@@ -891,6 +897,7 @@ __global__ void kernel_composite_rays(
         r += weight * rgbs[0];
         g += weight * rgbs[1];
         b += weight * rgbs[2];
+	newvar += weight * rgbs[3];
 
         //printf("[n=%d] num_steps=%d, alpha=%f, w=%f, T=%f, sum_dt=%f, d=%f\n", n, step, alpha, weight, T, sum_delta, d);
 
@@ -919,6 +926,7 @@ __global__ void kernel_composite_rays(
     image[0] = r;
     image[1] = g;
     image[2] = b;
+    newvar = image[3];
 }
 
 
