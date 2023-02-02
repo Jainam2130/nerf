@@ -233,9 +233,7 @@ class _march_rays_train(Function):
         xyzs = torch.zeros(M, 3, dtype=rays_o.dtype, device=rays_o.device)
         dirs = torch.zeros(M, 3, dtype=rays_o.dtype, device=rays_o.device)
         ts = torch.zeros(M, 2, dtype=rays_o.dtype, device=rays_o.device)
-
-       
-         _backend.march_rays_train(rays_o, rays_d, density_bitfield, bound, contract, dt_gamma, max_steps, N, C, H, nears, fars, xyzs, dirs, ts, rays, step_counter, noises) 
+        _backend.march_rays_train(rays_o, rays_d, density_bitfield, bound, contract, dt_gamma, max_steps, N, C, H, nears, fars, xyzs, dirs, ts, rays, step_counter, noises) 
         return xyzs, dirs, ts, rays
 
 march_rays_train = _march_rays_train.apply
