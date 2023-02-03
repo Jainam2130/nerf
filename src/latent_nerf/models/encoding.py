@@ -24,13 +24,13 @@ def get_encoder(encoding, input_dim=3,
         from .encoders.gridencoder import GridEncoder
         encoder = GridEncoder(input_dim=input_dim, num_levels=num_levels, level_dim=level_dim,
                               base_resolution=base_resolution, log2_hashmap_size=log2_hashmap_size,
-                              desired_resolution=desired_resolution, gridtype='hash', align_corners=align_corners, interpolation=interpolation)
+                              desired_resolution=desired_resolution, gridtype='hash', align_corners=align_corners)
 
     elif encoding == 'tiledgrid':
         from .encoders.gridencoder import GridEncoder
         encoder = GridEncoder(input_dim=input_dim, num_levels=num_levels, level_dim=level_dim,
                               base_resolution=base_resolution, log2_hashmap_size=log2_hashmap_size,
-                              desired_resolution=desired_resolution, gridtype='tiled', align_corners=align_corners, interpolation=interpolation)
+                              desired_resolution=desired_resolution, gridtype='tiled', align_corners=align_corners)
 
     else:
         raise NotImplementedError(
