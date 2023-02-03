@@ -23,7 +23,7 @@ class NeRFNetwork(NeRFRenderer):
         self.hidden_dim = hidden_dim
         additional_dim_size = 1 if self.latent_mode else 0
 
-        self.encoder, self.in_dim = get_encoder('hashgrid', input_dim=3, desired_resolution=2048 * self.bound, interpolation='smoothstep')
+        self.encoder, self.in_dim = get_encoder('hashgrid', input_dim=3, desired_resolution=2048 * self.bound)
 
         self.sigma_net = MLP(self.in_dim, 4 + additional_dim_size, hidden_dim, num_layers, bias=True)
         self.normal_net = MLP(self.in_dim, 3, hidden_dim, num_layers, bias=True)
