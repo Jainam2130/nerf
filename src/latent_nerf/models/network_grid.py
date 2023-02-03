@@ -28,7 +28,7 @@ class NeRFNetwork(NeRFRenderer):
         self.sigma_net = MLP(self.in_dim, 4 + additional_dim_size, hidden_dim, num_layers, bias=True)
         self.normal_net = MLP(self.in_dim, 3, hidden_dim, num_layers, bias=True)
 
-        self.density_activation = trunc_exp if self.opt.density_activation == 'exp' else F.softplus
+       
 
         # background network
         if self.bg_radius > 0:
@@ -66,7 +66,7 @@ class NeRFNetwork(NeRFRenderer):
 
         h = self.sigma_net(enc)
 
-        sigma = self.density_activation(h[..., 0] + self.density_blob(x))
+        sigma = trunc_exp(h[..., 0] + self.density_blob(x))
         albedo = h[..., 1:]
         if self.decoder_layer is not None:
             albedo = self.decoder_layer(albedo)
