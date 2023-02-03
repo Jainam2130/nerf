@@ -577,7 +577,7 @@ __global__ void kernel_composite_rays_train_forward(
     image[n * (3+1)] = r;
     image[n * (3+1) + 1] = g;
     image[n * (3+1) + 2] = b;
-    image[index * (3+1) + 3] = newvar;
+    image[n * (3+1) + 3] = newvar;
 }
 
 
