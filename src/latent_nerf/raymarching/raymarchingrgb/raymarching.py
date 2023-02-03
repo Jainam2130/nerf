@@ -334,10 +334,6 @@ class _march_rays(Function):
         rays_d = rays_d.float().contiguous().view(-1, 3)
 
         M = n_alive * n_step
-
-        if align > 0:
-            M += align - (M % align)
-        
         xyzs = torch.zeros(M, 3, dtype=rays_o.dtype, device=rays_o.device)
         dirs = torch.zeros(M, 3, dtype=rays_o.dtype, device=rays_o.device)
         ts = torch.zeros(M, 2, dtype=rays_o.dtype, device=rays_o.device) # 2 vals, one for rgb, one for depth
