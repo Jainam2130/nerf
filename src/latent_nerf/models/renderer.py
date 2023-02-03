@@ -352,7 +352,6 @@ class NeRFRenderer(nn.Module):
                         # query density
                         sigmas = self.density(cas_xyzs)['sigma'].reshape(-1).detach()
                         # assign 
-                        sigmas = sigmas.expand(indices.size()) #JUST TEMP TO SOLVE THE SHAPE MISTMATCH TODO:SOLEV IT PROPERLY
                         tmp_grid[cas, indices] = sigmas
         
         # ema update
