@@ -66,7 +66,7 @@ class NeRFNetwork(NeRFRenderer):
 
         h = self.sigma_net(enc)
 
-        sigma = trunc_exp(h[..., 0] + self.density_blob(x))
+        sigma = self.density_activation(h[..., 0] + self.density_blob(x))
         albedo = h[..., 1:]
         if self.decoder_layer is not None:
             albedo = self.decoder_layer(albedo)
