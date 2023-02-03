@@ -871,7 +871,7 @@ __global__ void kernel_composite_rays(
     image += index * (3+1);
 
     float t;
-    float d = depth[0], r = image[0], g = image[1], b = image[2], weight_sum = weights_sum[0];
+    float d = depth[0], r = image[0], g = image[1], newvar = image[3], b = image[2], weight_sum = weights_sum[0];
 
     // accumulate 
     uint32_t step = 0;
