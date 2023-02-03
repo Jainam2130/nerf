@@ -15,6 +15,10 @@ _gridtype_to_id = {
     'hash': 0,
     'tiled': 1,
 }
+_interp_to_id = {
+    'linear': 0,
+    'smoothstep': 1,
+}
 
 class _grid_encode(Function):
     @staticmethod
