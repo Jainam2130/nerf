@@ -195,7 +195,6 @@ class _march_rays_train(Function):
             step_counter: int32, (2), used to count the actual number of generated points.
             mean_count: int32, estimated mean steps to accelerate training. (but will randomly drop rays if the actual point count exceeded this threshold.)
             perturb: bool
-            align: int, pad output so its size is dividable by align, set to -1 to disable.
             force_all_rays: bool, ignore step_counter and mean_count, always calculate all rays. Useful if rendering the whole image, instead of some rays.
             dt_gamma: float, called cone_angle in instant-ngp, exponentially accelerate ray marching if > 0. (very significant effect, but generally lead to worse performance)
             max_steps: int, max number of sampled points along each ray, also affect min_stepsize.
@@ -317,7 +316,6 @@ class _march_rays(Function):
             C: int
             H: int
             nears/fars: float, [N]
-            align: int, pad output so its size is dividable by align, set to -1 to disable.
             perturb: bool/int, int > 0 is used as the random seed.
             dt_gamma: float, called cone_angle in instant-ngp, exponentially accelerate ray marching if > 0. (very significant effect, but generally lead to worse performance)
             max_steps: int, max number of sampled points along each ray, also affect min_stepsize.
